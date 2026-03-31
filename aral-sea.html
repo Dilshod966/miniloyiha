@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aral Sea & Desertification — AI Restoration</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+
+:root {
+  --navy:    #0d1b2a;
+  --navy2:   #111f30;
+  --teal:    #1a6b6b;
+  --teal2:   #2a9d8f;
+  --orange:  #e07b39;
+  --red:     #c0392b;
+  --gold:    #f4a261;
+  --mint:    #2ac3a2;
+  --green:   #27ae60;
+  --muted:   #7a95a8;
+  --white:   #f0f4f8;
+  --hh: 64px;
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'Inter',sans-serif; background:var(--navy); color:var(--white); overflow-x:hidden; }
+
+/* ── HEADER ── */
+#header {
+  position:fixed; top:0; left:0; right:0; height:var(--hh);
+  background:rgba(13,27,42,0.97); backdrop-filter:blur(14px);
+  border-bottom:1px solid rgba(42,157,143,0.22);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 28px; z-index:1000;
+}
+.logo { font-size:12px; font-weight:800; letter-spacing:2px; color:var(--teal2); white-space:nowrap; }
+.logo em { color:var(--orange); font-style:normal; }
+nav { display:flex; gap:2px; overflow-x:auto; scrollbar-width:none; }
+nav::-webkit-scrollbar { display:none; }
+nav a {
+  color:var(--muted); text-decoration:none; font-size:11px; font-weight:600;
+  letter-spacing:0.3px; padding:6px 11px; border-radius:20px; white-space:nowrap;
+  transition:all .25s;
+}
+nav a:hover { color:var(--white); background:rgba(255,255,255,0.07); }
+nav a.active { color:var(--teal2); background:rgba(42,157,143,0.15); }
+
+/* ── PROGRESS BAR ── */
+#pbar {
+  position:fixed; top:var(--hh); left:0; height:3px;
+  background:linear-gradient(90deg,var(--teal2),var(--orange));
+  width:0; z-index:999; transition:width .1s;
+}
+
+/* ── SECTIONS ── */
+section { padding:90px 64px 80px; max-width:1180px; margin:0 auto; }
+section+section { border-top:1px solid rgba(255,255,255,0.06); }
+
+.sec-label {
+  font-size:10px; font-weight:700; letter-spacing:3px; color:var(--teal2);
+  text-transform:uppercase; margin-bottom:10px;
+  opacity:0; transform:translateY(18px); transition:all .55s;
+}
+.sec-title {
+  font-size:clamp(26px,3.8vw,46px); font-weight:900; line-height:1.1; margin-bottom:8px;
+  opacity:0; transform:translateY(22px); transition:all .6s .1s;
+}
+.sec-sub {
+  font-size:14px; color:var(--muted); font-style:italic; margin-bottom:44px;
+  opacity:0; transform:translateY(18px); transition:all .6s .2s;
+}
+section.iv .sec-label, section.iv .sec-title, section.iv .sec-sub { opacity:1; transform:none; }
+
+/* ── ANIM UTILS ── */
+.a { opacity:0; transform:translateY(30px); transition:opacity .6s ease,transform .6s ease; }
+.al { transform:translateX(-34px); }
+.ar { transform:translateX(34px); }
+.as { transform:scale(.88); }
+.a.v { opacity:1 !important; transform:none !important; }
+
+/* ── GRIDS ── */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+/* ── STAT CARD ── */
+.sc {
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid rgba(255,255,255,0.1);
+  border-radius:14px; padding:26px 20px; text-align:center;
+}
+.sc .n { font-size:clamp(34px,3.8vw,52px); font-weight:900; display:block; line-height:1; }
+.sc .u { font-size:11.5px; font-weight:700; display:block; margin-top:4px; }
+.sc .d { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.45; }
+
+/* ── CHART WRAP ── */
+.cw {
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px; padding:26px;
+}
+.ct { font-size:12px; font-weight:700; color:var(--teal2); letter-spacing:1px; text-transform:uppercase; margin-bottom:16px; }
+
+/* ══ HERO ══ */
+#hero {
+  min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+  padding-top:var(--hh);
+  background:radial-gradient(ellipse 80% 60% at 60% 50%,rgba(26,107,107,0.18) 0%,transparent 70%),
+             linear-gradient(160deg,#0d1b2a 0%,#0a2030 100%);
+  overflow:hidden; position:relative;
+}
+#hero::before {
+  content:''; position:absolute; right:-80px; bottom:-60px;
+  width:460px; height:460px; border-radius:50%;
+  border:2px solid rgba(42,157,143,0.12);
+  box-shadow:0 0 0 60px rgba(42,157,143,0.05),0 0 0 120px rgba(42,157,143,0.025);
+  animation:pulse 5s infinite;
+}
+.h-badge {
+  display:inline-block; background:var(--teal); color:#fff;
+  font-size:10px; font-weight:700; letter-spacing:2.5px;
+  padding:6px 16px; border-radius:4px; margin-bottom:24px;
+  opacity:0; animation:fu .6s .2s forwards;
+}
+.h-h1 {
+  font-size:clamp(50px,8vw,108px); font-weight:900; line-height:.9;
+  opacity:0; animation:fu .7s .4s forwards;
+}
+.h-h1 em { color:var(--gold); font-style:normal; }
+.h-tag {
+  font-size:clamp(13px,1.7vw,18px); color:var(--muted); max-width:520px;
+  margin-top:20px; line-height:1.6; opacity:0; animation:fu .7s .7s forwards;
+}
+.h-stats { display:flex; gap:18px; margin-top:48px; flex-wrap:wrap; }
+.h-stat {
+  border:1.5px solid rgba(255,255,255,0.12); border-radius:12px;
+  padding:20px 28px; min-width:155px;
+  background:rgba(255,255,255,0.03);
+  opacity:0; animation:fu .6s forwards;
+}
+.h-stat:nth-child(1){animation-delay:.9s}
+.h-stat:nth-child(2){animation-delay:1.1s}
+.h-stat:nth-child(3){animation-delay:1.3s}
+.h-sn { font-size:46px; font-weight:900; color:var(--orange); display:block; line-height:1; }
+.h-sl { font-size:11px; color:var(--muted); margin-top:7px; line-height:1.4; }
+.h-q { margin-top:32px; font-style:italic; font-size:12.5px; color:rgba(120,160,180,.7); opacity:0; animation:fu .6s 1.5s forwards; }
+
+/* ══ SHRINKAGE ══ */
+#shrinkage { background:#f3eed9; color:#111; }
+#shrinkage .sec-title { color:#111; }
+#shrinkage .sec-sub { color:#555; }
+.bar-row { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.yr {
+  width:66px; font-weight:900; font-size:15px; color:#fff;
+  border-radius:8px; padding:8px 0; text-align:center; flex-shrink:0;
+}
+.track { flex:1; height:38px; background:#ddd; border-radius:8px; overflow:hidden; }
+.fill {
+  height:100%; border-radius:8px; width:0;
+  transition:width 1.7s cubic-bezier(.25,1,.5,1);
+  display:flex; align-items:center; padding-left:12px;
+  font-size:11px; font-weight:700; color:rgba(255,255,255,.85); white-space:nowrap;
+}
+.bi { width:105px; text-align:right; flex-shrink:0; }
+.bkm { font-size:13px; font-weight:700; color:#222; }
+.bpct { font-size:17px; font-weight:900; }
+.fn {
+  margin-top:18px; font-style:italic; font-size:13px; color:#555; text-align:center;
+  padding:14px 20px; background:rgba(0,0,0,.06); border-radius:8px;
+}
+
+/* ══ HISTORY TIMELINE ══ */
+.tl { position:relative; padding-left:24px; }
+.tl::before {
+  content:''; position:absolute; left:7px; top:0; bottom:0;
+  width:2px; background:linear-gradient(to bottom,var(--teal2),var(--red)); border-radius:2px;
+}
+.tli { position:relative; padding:0 0 28px 36px; }
+.tli::before {
+  content:''; position:absolute; left:-2px; top:6px;
+  width:16px; height:16px; border-radius:50%;
+  border:3px solid var(--teal2); background:var(--navy);
+}
+.tly { font-size:21px; font-weight:900; color:var(--teal2); margin-bottom:4px; }
+.tlt { font-size:13.5px; color:#bcd; line-height:1.6; }
+.tlt b { color:var(--gold); }
+
+/* ══ HUMAN COST ══ */
+#human { background:#120808; }
+.hcard {
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid rgba(255,80,60,.2);
+  border-radius:14px; padding:20px;
+}
+.hl { font-size:10px; font-weight:700; color:#e55; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:6px; }
+.hv { font-size:30px; font-weight:900; color:var(--orange); line-height:1; }
+.hd { font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5; }
+
+/* ══ RESTORATION ══ */
+.rhead {
+  font-size:11px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase;
+  padding:9px 16px; border-radius:8px; margin-bottom:16px; text-align:center;
+}
+.rhead.done { background:rgba(42,157,143,.15); color:var(--teal2); }
+.rhead.nope { background:rgba(192,57,43,.15); color:#e57; }
+.ri { display:flex; gap:12px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,.06); font-size:13px; line-height:1.5; }
+.ri:last-child { border-bottom:none; }
+.ri .ic { font-size:15px; flex-shrink:0; margin-top:1px; }
+.cta-b {
+  margin-top:32px; padding:18px 26px;
+  background:rgba(42,157,143,.1); border:1.5px solid rgba(42,157,143,.35);
+  border-radius:12px; font-size:14px; color:var(--teal2); text-align:center; line-height:1.6;
+}
+
+/* ══ AI OVERVIEW ══ */
+#ai-overview { background:linear-gradient(160deg,#0a1a0f,#0d1f1a); }
+.pill-grid { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:38px; }
+.pill {
+  background:rgba(42,195,162,.1); border:1.5px solid rgba(42,195,162,.25);
+  border-radius:50px; padding:11px 22px;
+  display:flex; align-items:center; gap:10px; font-size:13.5px; font-weight:600;
+}
+.pn {
+  width:26px; height:26px; border-radius:50%; background:var(--mint);
+  color:#fff; font-size:12px; font-weight:800;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+
+/* ══ AI SECTIONS ══ */
+#satellite,#water,#drone,#dust,#gen-ai { background:var(--navy2); }
+#water,#dust { background:#071825; }
+#drone { background:#0a1a0f; }
+#gen-ai { background:linear-gradient(135deg,#0a1825,#0f1f35); }
+
+.steps { display:flex; flex-direction:column; gap:18px; }
+.si { display:flex; gap:18px; align-items:flex-start; }
+.snum {
+  min-width:40px; height:40px; border-radius:50%; background:var(--teal);
+  font-size:17px; font-weight:900;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.sb b { color:var(--teal2); display:block; margin-bottom:3px; font-size:13.5px; }
+.sb { font-size:13px; color:#bcd; line-height:1.55; }
+
+/* ══ DRONE PIPELINE ══ */
+.pipeline { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:30px; }
+.pls { background:rgba(110,207,138,.08); border:1px solid rgba(110,207,138,.25); border-radius:10px; padding:13px 15px; font-size:12px; text-align:center; min-width:108px; line-height:1.5; }
+.pla { color:#6ecf8a; font-size:20px; font-weight:900; }
+
+/* ══ DUST ══ */
+.dbanner {
+  background:rgba(244,162,97,.1); border:1.5px solid rgba(244,162,97,.3);
+  border-radius:12px; padding:15px 22px; font-size:14px; color:#e8c57a;
+  text-align:center; margin-bottom:32px; line-height:1.6;
+}
+.dcard { background:rgba(255,255,255,.04); border:1px solid rgba(244,162,97,.2); border-radius:14px; padding:22px 16px; }
+.dct { font-size:13px; font-weight:700; color:var(--gold); margin-bottom:8px; }
+.dcb { font-size:36px; font-weight:900; color:var(--orange); display:block; margin-bottom:6px; }
+.dcd { font-size:12px; color:#aaa; line-height:1.5; }
+
+/* ══ GEN AI ══ */
+.gc { background:rgba(42,195,162,.06); border:1.5px solid rgba(42,195,162,.18); border-radius:16px; padding:26px 18px; text-align:center; }
+.gci { font-size:38px; margin-bottom:12px; display:block; }
+.gct { font-size:13px; font-weight:700; color:var(--mint); margin-bottom:10px; }
+.gcd { font-size:12.5px; color:#9ab; line-height:1.6; }
+
+/* ══ VISION ══ */
+#vision { background:var(--navy2); }
+.vi { display:flex; gap:16px; align-items:flex-start; background:rgba(255,255,255,.03); border:1px solid rgba(42,157,143,.15); border-radius:14px; padding:20px; }
+.vico { width:44px; height:44px; border-radius:12px; background:rgba(42,157,143,.15); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.vit { font-size:12.5px; font-weight:700; color:var(--teal2); margin-bottom:3px; }
+.vis { font-size:19px; font-weight:900; color:var(--gold); margin-bottom:3px; }
+.vid { font-size:12px; color:var(--muted); line-height:1.45; }
+
+/* ══ CONCLUSION ══ */
+#conclusion {
+  background:linear-gradient(160deg,#0a1f15,#0d1b2a);
+  min-height:70vh; display:flex; flex-direction:column; justify-content:center;
+  text-align:center; align-items:center;
+}
+.cbig { font-size:clamp(38px,5.5vw,70px); font-weight:900; line-height:1.05; }
+.cbig span { color:var(--teal2); }
+.cpara { font-size:14.5px; color:var(--muted); max-width:600px; margin:22px auto; line-height:1.7; }
+.acts { display:flex; gap:16px; margin-top:36px; flex-wrap:wrap; justify-content:center; }
+.act {
+  background:rgba(42,157,143,.08); border:1.5px solid rgba(42,157,143,.28);
+  border-radius:14px; padding:22px 22px; width:196px; text-align:center;
+}
+.acti { font-size:28px; margin-bottom:10px; }
+.actt { font-size:13px; font-weight:700; color:var(--teal2); margin-bottom:6px; }
+.actd { font-size:11.5px; color:var(--muted); line-height:1.5; }
+
+footer { text-align:center; padding:22px; font-size:11px; color:var(--muted); border-top:1px solid rgba(255,255,255,.07); letter-spacing:1px; }
+
+@keyframes fu { from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none} }
+@keyframes pulse {
+  0%,100%{box-shadow:0 0 0 60px rgba(42,157,143,.05),0 0 0 120px rgba(42,157,143,.025)}
+  50%{box-shadow:0 0 0 70px rgba(42,157,143,.09),0 0 0 130px rgba(42,157,143,.04)}
+}
+
+@media(max-width:768px){
+  section{padding:80px 22px 60px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  #header .logo{font-size:10px}
+  nav a{font-size:9.5px;padding:5px 7px}
+}
+</style>
+</head>
+<body>
+<div id="pbar"></div>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">ARAL SEA <em>&</em> DESERTIFICATION</div>
+  <nav id="nav">
+    <a href="#hero"       data-s="hero">Home</a>
+    <a href="#shrinkage"  data-s="shrinkage">Qisqarish</a>
+    <a href="#history"    data-s="history">Tarix</a>
+    <a href="#disaster"   data-s="disaster">Miqyos</a>
+    <a href="#human"      data-s="human">Insoniy Narx</a>
+    <a href="#restoration" data-s="restoration">Tiklash</a>
+    <a href="#ai-overview" data-s="ai-overview">AI Yechimlar</a>
+    <a href="#satellite"  data-s="satellite">Satellite</a>
+    <a href="#water"      data-s="water">Suv AI</a>
+    <a href="#drone"      data-s="drone">Dronlar</a>
+    <a href="#dust"       data-s="dust">Chang Bo'roni</a>
+    <a href="#gen-ai"     data-s="gen-ai">Gen AI</a>
+    <a href="#vision"     data-s="vision">Vizyon 2050</a>
+    <a href="#conclusion" data-s="conclusion">Xulosa</a>
+  </nav>
+</header>
+
+<!-- 1. HERO -->
+<section id="hero">
+  <span class="h-badge">ELO OLYMPIAD · REPUBLICAN STAGE · UZBEKISTAN</span>
+  <h1 class="h-h1">ARAL SEA<br><em>& DESERTIFICATION</em></h1>
+  <p class="h-tag">How Artificial Intelligence Can Restore Uzbekistan's Greatest Environmental Tragedy</p>
+  <div class="h-stats">
+    <div class="h-stat">
+      <span class="h-sn cnt" data-t="90" data-s="%">0%</span>
+      <div class="h-sl">of the Aral Sea lost</div>
+    </div>
+    <div class="h-stat">
+      <span class="h-sn">5.5M</span>
+      <div class="h-sl">people in Karakalpakstan</div>
+    </div>
+    <div class="h-stat">
+      <span class="h-sn">#1</span>
+      <div class="h-sl">worst eco disaster on Earth</div>
+    </div>
+  </div>
+  <p class="h-q">"The Aral Sea is the greatest man-made environmental disaster in human history." — UN</p>
+</section>
+
+<!-- 2. SHRINKAGE -->
+<section id="shrinkage">
+  <div class="sec-label">Bob 01</div>
+  <h2 class="sec-title">Uzbekiston va Orol Dengizi</h2>
+  <p class="sec-sub">Yer va dengiz — tanib bo'lmas darajada o'zgardi</p>
+
+  <div class="bar-row a"><div class="yr" style="background:#1e5f8a">1960</div><div class="track"><div class="fill" style="background:#1e5f8a" data-p="100">68,000 km²</div></div><div class="bi"><div class="bkm">68,000 km²</div><div class="bpct" style="color:#1e5f8a">100%</div></div></div>
+  <div class="bar-row a" style="transition-delay:.1s"><div class="yr" style="background:#1a7a6e">1990</div><div class="track"><div class="fill" style="background:#1a7a6e" data-p="49">33,000 km²</div></div><div class="bi"><div class="bkm">33,000 km²</div><div class="bpct" style="color:#1a7a6e">49%</div></div></div>
+  <div class="bar-row a" style="transition-delay:.2s"><div class="yr" style="background:#e07b39">2000</div><div class="track"><div class="fill" style="background:#e07b39" data-p="26">18,000 km²</div></div><div class="bi"><div class="bkm">18,000 km²</div><div class="bpct" style="color:#e07b39">26%</div></div></div>
+  <div class="bar-row a" style="transition-delay:.3s"><div class="yr" style="background:#c0392b">2024</div><div class="track"><div class="fill" style="background:#c0392b" data-p="10">~7,000 km²</div></div><div class="bi"><div class="bkm">~7,000 km²</div><div class="bpct" style="color:#c0392b">10%</div></div></div>
+
+  <div class="cw a" style="margin-top:36px;transition-delay:.4s">
+    <div class="ct">Orol dengizi yuza maydoni o'zgarishi (km²)</div>
+    <canvas id="areaChart" height="180"></canvas>
+  </div>
+  <p class="fn a" style="transition-delay:.5s;color:#555">Orol dengizi har yili ~500 km² qisqarmoqda — insoniyat tarixidagi eng tez ekologik halokatlardan biri.</p>
+</section>
+
+<!-- 3. HISTORY -->
+<section id="history">
+  <div class="sec-label">Bob 02</div>
+  <h2 class="sec-title">Qanday sodir bo'ldi</h2>
+  <p class="sec-sub">Sovet paxta mashinasi — dengizni quritgan reja</p>
+  <div class="g2" style="gap:44px;align-items:start">
+    <div class="tl">
+      <div class="tli a al"><div class="tly">1918</div><div class="tlt">Sovet muhandislari Amudaryo va Sirdaryo'dan sug'orish rejasini tuzdi — O'zbek cho'lida paxta ekildi.</div></div>
+      <div class="tli a al" style="transition-delay:.15s"><div class="tly">1960-yillar</div><div class="tlt">Orol dengizi o'z cho'qqisida: <b>68 000 km²</b>. SSSR yiliga <b>6 mln tonna</b> paxta yetishtirish buyurdi.</div></div>
+      <div class="tli a al" style="transition-delay:.3s"><div class="tly">1970-yillar</div><div class="tlt">Daryolar Orolga faqat mavsumiy etib bordi. Dengiz sathi <b>14 metrga</b> tushdi. Baliqchilik qulab tushdi.</div></div>
+      <div class="tli a al" style="transition-delay:.45s"><div class="tly">1987</div><div class="tlt">Orol Shimoliy (Qozog'iston) va Janubiy (O'zbekiston) qismlarga bo'lindi. Qaytarib bo'lmas zarar boshlandi.</div></div>
+      <div class="tli a al" style="transition-delay:.6s"><div class="tly">2000-yillar+</div><div class="tlt">Janubiy Orol deyarli butunlay bug'landi. <b>Oraqum cho'li — 57 000 km²</b> zaharli dengiz tubi — Markaziy Osiyoni qopladi.</div></div>
+    </div>
+    <div class="cw a ar">
+      <div class="ct">Sovet davrida suv taqsimoti (%)</div>
+      <canvas id="cottonDonut" height="240"></canvas>
+      <div style="margin-top:14px;font-size:12px;color:#888;text-align:center;line-height:1.6">1980-yillarga kelib, Amudaryo va Sirdaryo oqimining <strong style="color:var(--orange)">80%</strong><br>paxta sug'orishiga yo'naltirildi — dengizni ocharchilikka solib.</div>
+    </div>
+  </div>
+  <p class="a" style="margin-top:24px;font-style:italic;font-size:13px;color:#e07b39;text-align:center">Oraqum endi dunyoning eng zaharli cho'li — uning tuz to'foni Arktika va Himolayga etib boradi.</p>
+</section>
+
+<!-- 4. DISASTER SCALE -->
+<section id="disaster" style="background:var(--navy2)">
+  <div class="sec-label">Bob 03</div>
+  <h2 class="sec-title">Falokatning miqyosi</h2>
+  <p class="sec-sub">Raqamlarda — O'zbekistonning ekologik favqulodda holati</p>
+  <div class="g3" style="margin-bottom:22px">
+    <div class="sc a" style="border-color:rgba(224,123,57,.3)"><span class="n cnt" style="color:var(--orange)" data-t="57000" data-s="">0</span><span class="u" style="color:var(--orange)">km² Oraqum cho'li</span><div class="d">Dengiz bo'lgan joyda zaharli tuz va qum — Shveytsariyadan katta</div></div>
+    <div class="sc a" style="border-color:rgba(192,57,43,.3);transition-delay:.12s"><span class="n" style="color:var(--red)">90%</span><span class="u" style="color:var(--red)">Hajm yo'qoldi</span><div class="d">Orol dengizi suvining abadiy yo'qolgan qismi — faqat qoldiq ko'llar qolgan</div></div>
+    <div class="sc a" style="border-color:rgba(244,162,97,.3);transition-delay:.24s"><span class="n" style="color:var(--gold)">75%</span><span class="u" style="color:var(--gold)">Hosildorlik kamaydi</span><div class="d">Amudaryoning delta hududida qishloq xo'jaligi mahsuldorligi tushdi</div></div>
+    <div class="sc a" style="border-color:rgba(224,123,57,.3);transition-delay:.36s"><span class="n cnt" style="color:var(--orange)" data-t="150" data-s="M">0</span><span class="u" style="color:var(--orange)">Tonna/yil zaharli tuz</span><div class="d">Har yili dengiz tubidan Markaziy Osiyoga shamol bilan ko'chiriladigan tuz</div></div>
+    <div class="sc a" style="border-color:rgba(192,57,43,.3);transition-delay:.48s"><span class="n cnt" style="color:var(--red)" data-t="40000" data-s="">0</span><span class="u" style="color:var(--red)">Ish o'rni yo'qoldi</span><div class="d">Baliqchilikda abadiy yo'qotish — Mo'ynoq konservasi zavodida endi hech narsa qayta ishlanmaydi</div></div>
+    <div class="sc a" style="border-color:rgba(229,87,87,.3);transition-delay:.6s"><span class="n" style="color:#e55">+3°C</span><span class="u" style="color:#e55">Issiqroq yoz</span><div class="d">Qoraqalpog'istonda yoz harorati 1960-yildan beri ko'tarildi</div></div>
+  </div>
+  <div class="g2" style="gap:22px">
+    <div class="cw a"><div class="ct">Ekosistema qulash indeksi (bazis %) — 1960 vs 2024</div><canvas id="radarChart" height="270"></canvas></div>
+    <div class="cw a ar"><div class="ct">Yillik zaharli chang chiqarishlar (Mln tonna) — global taqqoslash</div><canvas id="dustBar" height="270"></canvas></div>
+  </div>
+</section>
+
+<!-- 5. HUMAN COST -->
+<section id="human">
+  <div class="sec-label">Bob 04</div>
+  <h2 class="sec-title">Insoniy narx</h2>
+  <p class="sec-sub">Qoraqalpog'iston — O'zbekistondagi eng zarar ko'rgan hudud</p>
+  <div class="g2" style="gap:16px;margin-bottom:28px">
+    <div class="hcard a"><div class="hl">Saraton kasalligi</div><div class="hv">10× yuqori</div><div class="hd">Anemiya, tomoq va qizilo'ngach saratoni epidemiyasi. Tuz-pestitsid changi yil bo'yi havoni qoplaydi.</div></div>
+    <div class="hcard a" style="transition-delay:.1s"><div class="hl">Chaqaloq o'limi</div><div class="hv">75 / 1 000</div><div class="hd">Sobiq SSSR davlatlari ichida eng yuqori — to'g'ridan-to'g'ri ifloslangan suv va zaharli changga bog'liq.</div></div>
+    <div class="hcard a" style="transition-delay:.2s"><div class="hl">Ichimlik suvi</div><div class="hv">Ifloslangan</div><div class="hd">Sovet davri sug'orish oqavalaridan DDT, pestitsid va tuz bilan yuqilgan er osti suvlari.</div></div>
+    <div class="hcard a" style="transition-delay:.3s"><div class="hl">Ommaviy ko'chish</div><div class="hv">100 000+ ketdi</div><div class="hd">Nukus va Mo'ynoq avlod shaharlari bo'lib qolmoqda. Aholi zaharli muhitdan qochdi.</div></div>
+    <div class="hcard a" style="transition-delay:.4s"><div class="hl">Baliqchilik sanoati</div><div class="hv">24 tur yo'qoldi</div><div class="hd">O'zbek Orol suvlaridan barcha tijorat baliq turlari yo'q bo'lib ketdi.</div></div>
+    <div class="hcard a" style="transition-delay:.5s"><div class="hl">Qishloq xo'jaligi</div><div class="hv">50% hosil yo'qotish</div><div class="hd">Sho'rlangan tuproq tobora kamroq mahsulot berib bormoqda.</div></div>
+  </div>
+  <div class="cw a"><div class="ct">Qoraqalpog'iston salomatligi — O'zbekiston o'rtacha ko'rsatkichiga nisbatan</div><canvas id="humanChart" height="200"></canvas></div>
+</section>
+
+<!-- 6. RESTORATION -->
+<section id="restoration">
+  <div class="sec-label">Bob 05</div>
+  <h2 class="sec-title">Tiklash urinishlari va ularning chegaralari</h2>
+  <p class="sec-sub">Nima qilindi — va bu nima uchun yetarli emas</p>
+  <div class="g2" style="align-items:start">
+    <div class="a">
+      <div class="rhead done">✓ O'ZBEKISTON NIMA QILDI</div>
+      <div class="ri"><span class="ic">🌿</span><span>Oraqum cho'li tubiga saksovul daraxti o'tkazish</span></div>
+      <div class="ri"><span class="ic">🤝</span><span>IFAS (Orol dengizi havzasi jamg'armasi) xalqaro rejasi</span></div>
+      <div class="ri"><span class="ic">🌾</span><span>Mirziyoyev hukumati tomonidan paxta kvotalarini kamaytirish</span></div>
+      <div class="ri"><span class="ic">💧</span><span>Kanal qoplash va suv tejash dasturlari</span></div>
+      <div class="ri"><span class="ic">🚿</span><span>2023 yilga kelib 700 000 ga tomchilatib sug'orish</span></div>
+    </div>
+    <div class="a ar">
+      <div class="rhead nope">✗ NIMA UCHUN YETARLI EMAS</div>
+      <div class="ri"><span class="ic">⚠️</span><span>57 000 km²dan faqat 2 mln ga ekildi; monitoring bo'lmasdan omon qolish darajasi past</span></div>
+      <div class="ri"><span class="ic">⚠️</span><span>Sekin ko'p tomonlama qarorlar; cheklangan moliya va ijro yo'q</span></div>
+      <div class="ri"><span class="ic">⚠️</span><span>Dehqonlar sug'orishga bog'liq; suv sarfi odatlari saqlanib qolmoqda</span></div>
+      <div class="ri"><span class="ic">⚠️</span><span>Tarmoqning &lt;20% qoplanadi; ko'p suv bug'lanish orqali yo'qoladi</span></div>
+      <div class="ri"><span class="ic">⚠️</span><span>Tomchilatib sug'orish isrofni kamaytiradi — lekin sho'rlanishni to'xtatmaydi</span></div>
+    </div>
+  </div>
+  <div class="cw a" style="margin-top:32px"><div class="ct">Tiklash maqsadiga qarshi natija: 2030 maqsad vs 2024 haqiqat</div><canvas id="progressChart" height="190"></canvas></div>
+  <div class="cta-b a">Haqiqiy o'zgarish uchun faqat <strong>sun'iy intellekt</strong> berishi mumkin bo'lgan aniqlik, tezlik va miqyos kerak.</div>
+</section>
+
+<!-- 7. AI OVERVIEW -->
+<section id="ai-overview">
+  <div class="sec-label">Bob 06</div>
+  <h2 class="sec-title">Sun'iy intellekt: yangi arsenal</h2>
+  <p class="sec-sub">AI O'zbekistonga 57 000 km² bo'ylab hamma narsani ko'rish, kelajakni bashorat qilish va aniq harakat qilish imkonini beradi</p>
+  <div class="pill-grid">
+    <div class="pill a"><div class="pn">01</div>Satellite & ML Monitoring</div>
+    <div class="pill a" style="transition-delay:.1s"><div class="pn">02</div>AI Suv Boshqaruvi</div>
+    <div class="pill a" style="transition-delay:.2s"><div class="pn">03</div>Dron Saksovul Ekish</div>
+    <div class="pill a" style="transition-delay:.3s"><div class="pn">04</div>Chang Bo'roni Bashorati</div>
+    <div class="pill a" style="transition-delay:.4s"><div class="pn">05</div>Generativ AI Ekologiya</div>
+  </div>
+  <div class="cw a"><div class="ct">AI vs An'anaviy usullar — 2040 yilga prognoz ta'siri</div><canvas id="aiImpactChart" height="220"></canvas></div>
+</section>
+
+<!-- 8. SATELLITE -->
+<section id="satellite">
+  <div class="sec-label">AI Yechim 01</div>
+  <h2 class="sec-title">Satellite & ML Monitoring</h2>
+  <p class="sec-sub">Orol havzasi — hamma narsani ko'rish</p>
+  <div class="g2" style="gap:36px;align-items:start">
+    <div class="steps">
+      <div class="si a"><div class="snum">1</div><div class="sb"><b>ESA Sentinel & NASA Landsat</b>Oraqum cho'li va Amudaryoni kunlik 10m aniqlikda tasvirlash — sayyoraviy ko'lamda real vaqt ko'rish.</div></div>
+      <div class="si a" style="transition-delay:.15s"><div class="snum">2</div><div class="sb"><b>ML Kuzatuv Modellari</b>Tuproq sho'rlanishi tarqalishi, qolgan suv hamtalari va yangi chang bo'roni manbalari kuzatiladi.</div></div>
+      <div class="si a" style="transition-delay:.3s"><div class="snum">3</div><div class="sb"><b>Noqonuniy Suv Olishni Aniqlash</b>AI Tojikiston va Turkmanistondagi yuqori oqim suvini olishni avtomatik aniqlaydi.</div></div>
+      <div class="si a" style="transition-delay:.45s"><div class="snum">4</div><div class="sb"><b>Avtomatlashtirilgan Hisobotlar</b>Hokimiyatlar ustuvor aralashuv zonalari ko'rsatilgan haftalik yer-salomatligi hisobotlarini oladi.</div></div>
+    </div>
+    <div class="cw a ar"><div class="ct">Monitoring tezligi: AI vs An'anaviy (skan/hafta)</div><canvas id="satelliteChart" height="290"></canvas></div>
+  </div>
+</section>
+
+<!-- 9. WATER -->
+<section id="water">
+  <div class="sec-label">AI Yechim 02</div>
+  <h2 class="sec-title">AI-Powered Suv Boshqaruvi</h2>
+  <p class="sec-sub">Amudaryo O'zbekistonning hayot tomiri — AI har tomchini hisobga olishi mumkin</p>
+  <div class="g2" style="gap:18px;margin-bottom:28px">
+    <div class="a" style="background:rgba(42,157,143,.06);border:1px solid rgba(42,157,143,.2);border-radius:14px;padding:22px"><div style="font-size:13px;font-weight:700;color:var(--teal2);margin-bottom:8px">🏔 Daryo Oqimini Bashorat Qilish</div><div style="font-size:13px;color:#bcd;line-height:1.6">AI Pomir & Tyan-Shan qor erishini tahlil qilib, Amudaryo oqimini <strong style="color:var(--mint)">3–6 oy</strong> oldin bashorat qiladi.</div></div>
+    <div class="a ar" style="background:rgba(42,157,143,.06);border:1px solid rgba(42,157,143,.2);border-radius:14px;padding:22px"><div style="font-size:13px;font-weight:700;color:var(--teal2);margin-bottom:8px">💧 Aqlli Sug'orish Tarmog'i</div><div style="font-size:13px;color:#bcd;line-height:1.6">IoT datchiklar AI klapanlarini boshqaradi — 4,5 mln gektar bo'ylab suv sarfini <strong style="color:var(--mint)">40–50%</strong> kamaytiradi.</div></div>
+    <div class="a" style="background:rgba(42,157,143,.06);border:1px solid rgba(42,157,143,.2);border-radius:14px;padding:22px;transition-delay:.1s"><div style="font-size:13px;font-weight:700;color:var(--teal2);margin-bottom:8px">🧂 Sho'rlanishni Zararsizlantirish</div><div style="font-size:13px;color:#bcd;line-height:1.6">ML modellari sho'r nuqtalarni xaritalaydi va mineral davolashlarni rejalashtiradi — gips va biochar maqbul vaqtda qo'llaniladi.</div></div>
+    <div class="a ar" style="background:rgba(42,157,143,.06);border:1px solid rgba(42,157,143,.2);border-radius:14px;padding:22px;transition-delay:.1s"><div style="font-size:13px;font-weight:700;color:var(--teal2);margin-bottom:8px">🌐 Chegara Oshib AI Diplomatiyasi</div><div style="font-size:13px;color:#bcd;line-height:1.6">5 Markaziy Osiyo davlati uchun umumiy AI platformasi — O'zbekiston IFAS orqali taklif qilgan.</div></div>
+  </div>
+  <div class="cw a"><div class="ct">Suv tejash: An'anaviy vs AI boshqaruvidagi sug'orish (Mlrd m³/yil)</div><canvas id="waterChart" height="200"></canvas></div>
+</section>
+
+<!-- 10. DRONE -->
+<section id="drone">
+  <div class="sec-label">AI Yechim 03</div>
+  <h2 class="sec-title">AI Dron Ekish</h2>
+  <p class="sec-sub">Saksovul daraxti Oraqumga qarshi O'zbekistonning eng yaxshi quroli — AI ekishni 100× tezlashtiradi</p>
+  <div class="g3" style="margin-bottom:32px">
+    <div class="sc a" style="border-color:rgba(110,207,138,.3)"><span class="n cnt" style="color:#6ecf8a" data-t="57000" data-s="">0</span><span class="u" style="color:#6ecf8a">km² yashillanishi mumkin</span><div class="d">Butun Oraqum cho'li saksovul bilan ekilishi mumkin</div></div>
+    <div class="sc a" style="border-color:rgba(110,207,138,.3);transition-delay:.15s"><span class="n" style="color:#6ecf8a">65%</span><span class="u" style="color:#6ecf8a">Kam chang bo'roni</span><div class="d">To'liq qoplanganda shaharlarga etib boruvchi zaharli chang 65% kamayadi</div></div>
+    <div class="sc a" style="border-color:rgba(110,207,138,.3);transition-delay:.3s"><span class="n" style="color:#6ecf8a">10×</span><span class="u" style="color:#6ecf8a">Tezroq ekish</span><div class="d">Qo'l bilan ekishdan — dron AI kuniga ko'proq joy qoplaydi</div></div>
+  </div>
+  <div class="pipeline a">
+    <div class="pls">🛰 AI tuz qobig'i zonalarini xaritalaydi</div>
+    <div class="pla">→</div>
+    <div class="pls">🌱 Urug' zichligini tanlaydi</div>
+    <div class="pla">→</div>
+    <div class="pls">🚁 Dron to'dalari urug' sochadi</div>
+    <div class="pla">→</div>
+    <div class="pls">📡 Datchiklar unib chiqishni kuzatadi</div>
+    <div class="pla">→</div>
+    <div class="pls">🤖 AI keyingi partiyani moslashtiradi</div>
+  </div>
+  <div class="cw a" style="margin-top:32px"><div class="ct">Ekish ko'lami: Qo'lda vs AI Dronlar (gektar/yil)</div><canvas id="droneChart" height="200"></canvas></div>
+</section>
+
+<!-- 11. DUST -->
+<section id="dust">
+  <div class="sec-label">AI Yechim 04</div>
+  <h2 class="sec-title">AI Chang Bo'roni Bashorati</h2>
+  <p class="sec-sub">Oraqum changi minglarni o'ldirmoqda — AI bashorat qilishi va himoya qilishi mumkin</p>
+  <div class="dbanner a">⚠️ Oraqum har yili <strong>150 mln tonna</strong> tuz-pestitsid changini chiqaradi. "Tuz bo'ronlari" <strong>300–500 km</strong> masofaga yetib, Nukus, Urganch va Toshkentni qoplab saraton epidemiyasini keltirib chiqarmoqda.</div>
+  <div class="g3" style="margin-bottom:28px">
+    <div class="dcard a"><span class="dcb">48–72 soat</span><div class="dct">🛰 Bo'ron Kelib Chiqishi AI</div><div class="dcd">ML modellari har kuni sun'iy yo'ldosh shamol naqshlari ma'lumotlarini skanerlaydi — aholiga etib bormasdan 48–72 soat oldin chang bo'ronini aniqlaydi.</div></div>
+    <div class="dcard a" style="transition-delay:.15s"><span class="dcb">PM2.5</span><div class="dct">🏥 Sog'liqni Saqlash Ogohlantirish</div><div class="dcd">Kasalxonalar, maktablar va aholiga avtomatik ogohlantirishlar yuboriladi. AI qaysi tumanlar eng yuqori changli havo ta'siriga uchraganini bashorat qiladi.</div></div>
+    <div class="dcard a" style="transition-delay:.3s"><span class="dcb">Himoya qalqoni</span><div class="dct">🌿 Shamolpana Optimallashtiruvchi</div><div class="dcd">AI shaharlarga etib bormasdan chang bo'roni yo'laklarini to'sish uchun saksovul himoya qatorlarining maqbul joyini hisoblaydi — dronlar qurgan tirik qalqon.</div></div>
+  </div>
+  <div class="cw a"><div class="ct">Chang bo'roni chastotasi va AI bilan kamayish bashorati (hodisa/yil)</div><canvas id="dustTrendChart" height="200"></canvas></div>
+</section>
+
+<!-- 12. GEN AI -->
+<section id="gen-ai">
+  <div class="sec-label">AI Yechim 05</div>
+  <h2 class="sec-title">Generativ AI: Ekotizimni qayta qurish</h2>
+  <p class="sec-sub">Oraqum cho'li uchun butunlay yangi hayot loyihalash</p>
+  <div class="g3" style="margin-bottom:32px">
+    <div class="gc a"><span class="gci">🧬</span><div class="gct">AI-Yaratilgan Mahalliy O'simlik Aralashmalari</div><div class="gcd">Generativ AI Oraqumning tuproq kimyosi, mikroiqlim zonalari va biologik xilma-xillik maqsadlarini tahlil qilib, sobiq dengiz tubining har bir kichik mintaqasiga moslashtirilgan tur aralashmalarini loyihalaydi.</div></div>
+    <div class="gc a" style="transition-delay:.15s"><span class="gci">🌐</span><div class="gct">Orol Havzasining Raqamli Egizagi</div><div class="gcd">Amudaryo havzasining to'liq AI simulyatsiyasi olimlariga real dunyoda harakat qilishdan oldin tiklash stsenariylarini — o'rmonlashtirish, suv chiqarish, tuproqni davolash — sinab ko'rish imkonini beradi.</div></div>
+    <div class="gc a" style="transition-delay:.3s"><span class="gci">🔬</span><div class="gcd">Cutting-edge AI Oraqum tuproq mikrobiomasini tahlil qilib, er osti hayotini qayta tiklaydigan bakteriya va zamburug' inokulantlarini belgilaydi — haqiqiy ekotizimning asosi.</div><div class="gct">AI Mikrobiomani Tiklash</div></div>
+  </div>
+  <div class="cw a"><div class="ct">Ekotizim tiklanish bashorati: AI bilan va AI siz (Biologik xilma-xillik indeksi)</div><canvas id="ecoChart" height="220"></canvas></div>
+</section>
+
+<!-- 13. VISION -->
+<section id="vision">
+  <div class="sec-label">Bob 07</div>
+  <h2 class="sec-title">O'zbekiston taraqqiyoti va Vizyon 2050</h2>
+  <p class="sec-sub">Nima erishildi — va AI bizni qayerga olib borishi mumkin</p>
+  <div class="g2" style="margin-bottom:32px">
+    <div class="vi a"><div class="vico">🌿</div><div><div class="vit">Saksovul Ekish</div><div class="vis">2M+ ga (2018 dan)</div><div class="vid">AI dronlar buni 5× maydon va 10× tezlikda 57 000 km²gacha kengaytirishi mumkin.</div></div></div>
+    <div class="vi a ar"><div class="vico">💧</div><div><div class="vit">Tomchilatib Sug'orish</div><div class="vis">700 000 ga (2023)</div><div class="vid">AI tuproq datchiklari bilan birlashtirilsa, qishloq xo'jaligi suvidan yana 35% tejash mumkin.</div></div></div>
+    <div class="vi a" style="transition-delay:.1s"><div class="vico">🌊</div><div><div class="vit">Shimoliy Orol Qisman Tiklandi</div><div class="vis">25 000 km² o'rmonlashtirish</div><div class="vid">Qozog'istonning Ko'karal to'g'oni qisman tiklanish mumkinligini isbotladi. O'zbekiston ham shunday maqsad qo'ygan.</div></div></div>
+    <div class="vi a ar" style="transition-delay:.1s"><div class="vico">🤝</div><div><div class="vit">IFAS Raisligi</div><div class="vis">5 davlat AI platformasi</div><div class="vid">O'zbekiston Orol dengizi havzasi jamg'armasiga raislik qiladi — barcha Markaziy Osiyo davlatlari uchun umumiy AI monitoring taklif qilgan.</div></div></div>
+    <div class="vi a" style="transition-delay:.2s"><div class="vico">🐟</div><div><div class="vit">Baliqlar Qaytadi</div><div class="vis">Jamoalar tiklanadi</div><div class="vid">Ekologik tiklanish bilan ko'chirilgan aholi Mo'ynoq va Oralsiga qaytishi mumkin.</div></div></div>
+    <div class="vi a ar" style="transition-delay:.2s"><div class="vico">🌍</div><div><div class="vit">Global Yetakchilik</div><div class="vis">AI + Ekologiya Markazi</div><div class="vid">O'zbekiston AI orqali ekologiyani tiklash bo'yicha Markaziy Osiyo modeli bo'ladi.</div></div></div>
+  </div>
+  <div class="cw a"><div class="ct">Vizyon 2050 Ko'rsatkichlari — Asosiy metrika prognozlari</div><canvas id="visionChart" height="240"></canvas></div>
+</section>
+
+<!-- 14. CONCLUSION -->
+<section id="conclusion">
+  <h2 class="cbig a">OROL DENGIZI<br><span>YANA YASHAY OLADI</span></h2>
+  <p class="cpara a" style="transition-delay:.1s">Orol dengizi falokati bir kechada sodir bo'lmadi — va u bir kechada tuzatilmaydi. Lekin Sun'iy Intellekt bilan O'zbekistonda endi Oraqumning har bir inchini kuzatish, uning tuproqini tiklash va aholini himoya qilish uchun qurollar mavjud — o'n yil oldin tasavvur qilib bo'lmaydigan ko'lamda.</p>
+  <div class="acts">
+    <div class="act a" style="transition-delay:.2s"><div class="acti">📡</div><div class="actt">Kuzatish va O'lchash</div><div class="actd">Orol havzasi bo'ylab AI satellite tizimlarini joylashtirish. Ma'lumotlarni barcha Markaziy Osiyo davlatlariga ochish.</div></div>
+    <div class="act a" style="transition-delay:.35s"><div class="acti">🌿</div><div class="actt">Ekish va Tiklash</div><div class="actd">AI rahbarligida dron saksovul ekishni 2 mln dan 57 000 km² Oraqumgacha kengaytirish.</div></div>
+    <div class="act a" style="transition-delay:.5s"><div class="acti">🤝</div><div class="actt">Innovatsiya va Hamkorlik</div><div class="actd">O'zbekistonni Markaziy Osiyo AI + ekologiya markaziga aylantirish. Texnologiyani ulashish. Dunyoga yetakchilik qilish.</div></div>
+  </div>
+</section>
+
+<footer>ELO OLYMPIAD · REPUBLICAN STAGE · Cho'llanish, Orol Dengizi va Sun'iy Intellekt · O'zbekiston</footer>
+
+<script>
+/* ── PROGRESS BAR ── */
+window.addEventListener('scroll', () => {
+  document.getElementById('pbar').style.width =
+    (window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100) + '%';
+});
+
+/* ── ACTIVE NAV ── */
+const secs = [...document.querySelectorAll('section[id]')];
+const links = [...document.querySelectorAll('nav a')];
+const navObs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (e.isIntersecting) {
+      links.forEach(a => a.classList.remove('active'));
+      const l = document.querySelector(`nav a[data-s="${e.target.id}"]`);
+      if (l) { l.classList.add('active'); l.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}); }
+    }
+  });
+}, {threshold: .35});
+secs.forEach(s => navObs.observe(s));
+
+/* ── SECTION TITLES ── */
+const titObs = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) e.target.classList.add('iv'); });
+}, {threshold: .2});
+document.querySelectorAll('section').forEach(s => titObs.observe(s));
+
+/* ── SCROLL ANIM ── */
+const animObs = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('v');
+      if (e.target.closest('#shrinkage')) triggerBars();
+      e.target.querySelectorAll('.cnt[data-t]').forEach(startCount);
+      animObs.unobserve(e.target);
+    }
+  });
+}, {threshold: .13});
+document.querySelectorAll('.a').forEach(el => animObs.observe(el));
+
+/* ── COUNT UP ── */
+function startCount(el) {
+  if (el._counted) return; el._counted = true;
+  const t = parseFloat(el.dataset.t), sfx = el.dataset.s || '';
+  let v = 0; const inc = t/60;
+  const tmr = setInterval(() => {
+    v = Math.min(v + inc, t);
+    el.textContent = Math.round(v).toLocaleString() + sfx;
+    if (v >= t) clearInterval(tmr);
+  }, 28);
+}
+setTimeout(() => {
+  document.querySelectorAll('.cnt[data-t]').forEach(el => {
+    if (el.getBoundingClientRect().top < window.innerHeight) startCount(el);
+  });
+}, 1600);
+
+/* ── BARS ── */
+let barsTriggered = false;
+function triggerBars() {
+  if (barsTriggered) return; barsTriggered = true;
+  document.querySelectorAll('.fill').forEach(f => { f.style.width = f.dataset.p + '%'; });
+}
+const barObs = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) { triggerBars(); barObs.disconnect(); } });
+}, {threshold: .25});
+const shr = document.getElementById('shrinkage');
+if (shr) barObs.observe(shr);
+
+/* ══════ CHARTS ══════ */
+Chart.defaults.color = '#8a9baa';
+Chart.defaults.font.family = 'Inter, sans-serif';
+const TC = '#2a9d8f', OC = '#e07b39', RC = '#c0392b', GC = '#f4a261',
+      MC = '#2ac3a2', GRC = '#27ae60', MU = 'rgba(122,149,168,.45)';
+
+function mk(id, cfg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  return new Chart(el, cfg);
+}
+
+/* Area shrinkage */
+mk('areaChart', {
+  type:'line',
+  data:{
+    labels:['1960','1965','1970','1975','1980','1985','1990','1995','2000','2005','2010','2015','2020','2024'],
+    datasets:[{
+      label:'Yuza maydoni (km²)',
+      data:[68000,62000,54000,46000,40000,36000,33000,24000,18000,14000,11000,9000,8000,7000],
+      borderColor:TC, backgroundColor:'rgba(42,157,143,.15)', fill:true, tension:.4, pointRadius:4, pointBackgroundColor:TC
+    }]
+  },
+  options:{plugins:{legend:{display:false}},scales:{
+    y:{grid:{color:'rgba(0,0,0,.07)'},ticks:{color:'#555',callback:v=>v.toLocaleString()+' km²'}},
+    x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#555'}}
+  }}
+});
+
+/* Cotton donut */
+mk('cottonDonut', {
+  type:'doughnut',
+  data:{
+    labels:['Paxta sug\'orish','Orolga yetadi','Boshqa maqsadlar'],
+    datasets:[{data:[80,12,8],backgroundColor:[OC,TC,MU],borderWidth:0,hoverOffset:8}]
+  },
+  options:{cutout:'60%',plugins:{legend:{position:'bottom',labels:{padding:16,boxWidth:12}}}}
+});
+
+/* Radar */
+mk('radarChart', {
+  type:'radar',
+  data:{
+    labels:['Suv hajmi','Baliq turlari','Qishloq xo\'jaligi','Inson salomatligi','Biologik xilma-xillik','Havo sifati'],
+    datasets:[
+      {label:'1960 (asos)',data:[100,100,100,100,100,100],borderColor:TC,backgroundColor:'rgba(42,157,143,.15)',pointBackgroundColor:TC},
+      {label:'2024 (hozir)',data:[10,0,25,20,8,15],borderColor:RC,backgroundColor:'rgba(192,57,43,.15)',pointBackgroundColor:RC}
+    ]
+  },
+  options:{scales:{r:{min:0,max:100,grid:{color:'rgba(255,255,255,.09)'},pointLabels:{font:{size:10.5}},ticks:{display:false}}},plugins:{legend:{position:'bottom'}}}
+});
+
+/* Dust bar */
+mk('dustBar', {
+  type:'bar',
+  data:{
+    labels:['Oraqum\n(Orol dengizi)','Saxara\n(mintaqa o\'rt.)','Gobi\n(mintaqa o\'rt.)','Arab\n(mintaqa o\'rt.)'],
+    datasets:[{label:'Yillik chang (Mln tonna)',data:[150,90,60,70],backgroundColor:[RC,MU,MU,MU],borderRadius:6}]
+  },
+  options:{plugins:{legend:{display:false}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:v=>v+'M t'}},
+    x:{grid:{display:false}}
+  }}
+});
+
+/* Human chart */
+mk('humanChart', {
+  type:'bar',
+  data:{
+    labels:['Saraton darajasi\n(×milliy o\'rt.)','Chaqaloq o\'limi\n(1000 ga)','Anemiya\ntar.(%)', 'Toza suv\nolish (%)'],
+    datasets:[
+      {label:"O'zbekiston o'rtacha",data:[1,22,18,88],backgroundColor:'rgba(42,157,143,.6)',borderRadius:6},
+      {label:'Qoraqalpog\'iston',data:[10,75,64,35],backgroundColor:'rgba(192,57,43,.75)',borderRadius:6}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'}},x:{grid:{display:false}}
+  }}
+});
+
+/* Progress chart */
+mk('progressChart', {
+  type:'bar',
+  data:{
+    labels:['Saksovul\n(M ga)','Tomchilatib\nsug\'orish (M ga)','Kanal\nqoplash (%)','Suv tejalishi\n(km³/yil)'],
+    datasets:[
+      {label:'2030 maqsad',data:[57,4.5,100,8],backgroundColor:'rgba(42,157,143,.3)',borderColor:TC,borderWidth:2,borderRadius:6},
+      {label:'Erishildi (2024)',data:[2,0.7,20,1.2],backgroundColor:OC,borderRadius:6}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'}},x:{grid:{display:false}}
+  }}
+});
+
+/* AI impact */
+mk('aiImpactChart', {
+  type:'bar',
+  data:{
+    labels:["Tiklangan yer\n(km²/yil)","Tejalgan suv\n(km³/yil)","Kamaygan chang\n(Mln t/yil)","Ekish tezligi\n(ga/kun)","Kasallik ogohlantirishi\n(soat avval)"],
+    datasets:[
+      {label:"An'anaviy usullar",data:[500,0.5,10,200,6],backgroundColor:MU,borderRadius:6},
+      {label:"AI bilan (2035 prognoz)",data:[8000,4,80,5000,72],backgroundColor:MC,borderRadius:6}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{type:'logarithmic',grid:{color:'rgba(255,255,255,.06)'}},x:{grid:{display:false}}
+  }}
+});
+
+/* Satellite speed */
+mk('satelliteChart', {
+  type:'bar',
+  data:{
+    labels:["Qo'lda ko'rik","Masofaviy kuzatuv\n(AI siz)","ML + Satellite\n(AI bilan)"],
+    datasets:[{label:'Skan/hafta',data:[1,7,700],backgroundColor:[MU,GC,TC],borderRadius:8}]
+  },
+  options:{
+    indexAxis:'y',
+    plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'rgba(255,255,255,.06)'},type:'logarithmic'},y:{grid:{display:false}}}
+  }
+});
+
+/* Water chart */
+mk('waterChart', {
+  type:'line',
+  data:{
+    labels:['2024','2026','2028','2030','2032','2035','2040'],
+    datasets:[
+      {label:"An'anaviy (km³/yil)",data:[28,27.5,27,26,25,24,23],borderColor:MU,backgroundColor:'rgba(150,150,150,.08)',fill:true,tension:.4,borderDash:[6,3]},
+      {label:"AI boshqaruvi (km³/yil)",data:[28,24,20,16,13,11,8],borderColor:TC,backgroundColor:'rgba(42,157,143,.12)',fill:true,tension:.4}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:v=>v+' km³'}},
+    x:{grid:{color:'rgba(255,255,255,.04)'}}
+  }}
+});
+
+/* Drone chart */
+mk('droneChart', {
+  type:'bar',
+  data:{
+    labels:["Qo'lda\n(hozir)","Qo'l+\nasboblar","Dron\n(asosiy)","AI Dron to'dasi\n(2027)","To'liq AI\n(2035)"],
+    datasets:[{label:'Gektar/yil',data:[200000,500000,1500000,8000000,20000000],backgroundColor:[MU,'rgba(150,150,150,.5)',GC,TC,MC],borderRadius:8}]
+  },
+  options:{plugins:{legend:{display:false}},scales:{
+    y:{type:'logarithmic',grid:{color:'rgba(255,255,255,.06)'},ticks:{callback:v=>v>=1e6?(v/1e6).toFixed(1)+'M':v>=1000?(v/1000).toFixed(0)+'K':v}},
+    x:{grid:{display:false}}
+  }}
+});
+
+/* Dust trend */
+mk('dustTrendChart', {
+  type:'line',
+  data:{
+    labels:['2000','2005','2010','2015','2020','2025','2030','2035','2040','2050'],
+    datasets:[
+      {label:"AI siz (hodisa/yil)",data:[65,68,72,75,78,80,83,86,88,90],borderColor:RC,backgroundColor:'rgba(192,57,43,.1)',fill:true,tension:.4,borderDash:[6,3]},
+      {label:"AI bilan",data:[65,68,72,75,78,72,60,45,30,15],borderColor:GRC,backgroundColor:'rgba(39,174,96,.1)',fill:true,tension:.4}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'}},x:{grid:{color:'rgba(255,255,255,.04)'}}
+  }}
+});
+
+/* Eco chart */
+mk('ecoChart', {
+  type:'line',
+  data:{
+    labels:['2024','2027','2030','2033','2036','2040','2045','2050'],
+    datasets:[
+      {label:"AI siz (Biologik xilma-xillik indeksi)",data:[8,9,10,10,11,12,13,14],borderColor:MU,tension:.4,fill:false,borderDash:[6,3]},
+      {label:"AI bilan tiklanish",data:[8,14,22,34,46,58,72,85],borderColor:MC,backgroundColor:'rgba(42,195,162,.1)',fill:true,tension:.4},
+      {label:"1960 asos (100)",data:[100,100,100,100,100,100,100,100],borderColor:'rgba(42,157,143,.25)',borderDash:[2,4],fill:false,pointRadius:0}
+    ]
+  },
+  options:{plugins:{legend:{position:'bottom'}},scales:{
+    y:{grid:{color:'rgba(255,255,255,.06)'},max:110},
+    x:{grid:{color:'rgba(255,255,255,.04)'}}
+  }}
+});
+
+/* Vision radar */
+mk('visionChart', {
+  type:'radar',
+  data:{
+    labels:["Tiklangan yer","Suv samaradorligi","Havo sifati","Baliq aholisi","Inson salomatligi","Biologik xilma-xillik"],
+    datasets:[
+      {label:"Hozir (2024)",data:[4,30,20,0,22,8],borderColor:RC,backgroundColor:'rgba(192,57,43,.12)',pointBackgroundColor:RC},
+      {label:"2035 maqsad (AI bilan)",data:[40,65,55,30,50,42],borderColor:GC,backgroundColor:'rgba(244,162,97,.12)',pointBackgroundColor:GC},
+      {label:"Vizyon 2050",data:[80,85,78,65,75,70],borderColor:MC,backgroundColor:'rgba(42,195,162,.12)',pointBackgroundColor:MC}
+    ]
+  },
+  options:{scales:{r:{min:0,max:100,grid:{color:'rgba(255,255,255,.08)'},pointLabels:{font:{size:10.5}},ticks:{display:false}}},plugins:{legend:{position:'bottom'}}}
+});
+</script>
+</body>
+</html>
