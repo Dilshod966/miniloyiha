@@ -327,14 +327,28 @@ footer { text-align:center; padding:22px; font-size:11px; color:var(--muted); bo
 .art-meta span { color:var(--muted); font-weight:600; }
 
 /* ══ LIVE MAP ══ */
-#live-map { background:#071825; }
+#live-map { background:#060f18; }
 #aral-map {
-  height:540px; border-radius:16px;
-  border:1.5px solid rgba(42,157,143,.28);
-  overflow:hidden; margin-top:8px;
+  height:600px; border-radius:16px;
+  border:1.5px solid rgba(42,157,143,.35);
+  overflow:hidden; margin-top:16px;
+  box-shadow:0 0 40px rgba(42,157,143,.1);
 }
+.map-stages { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+.mstage {
+  background:rgba(255,255,255,.03); border:1px solid rgba(42,157,143,.18);
+  border-radius:12px; padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
+}
+.mstage-n {
+  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+  background:rgba(42,157,143,.2); border:2px solid var(--teal2);
+  font-size:13px; font-weight:900; color:var(--teal2);
+  display:flex; align-items:center; justify-content:center;
+}
+.mstage-t { font-size:11.5px; font-weight:700; color:var(--white); margin-bottom:3px; }
+.mstage-d { font-size:10.5px; color:var(--muted); line-height:1.45; }
 .map-legend {
-  display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:18px;
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:16px;
 }
 .ml-item {
   display:flex; align-items:flex-start; gap:10px;
@@ -344,13 +358,43 @@ footer { text-align:center; padding:22px; font-size:11px; color:var(--muted); bo
 .ml-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; margin-top:2px; }
 .ml-label { font-size:11.5px; font-weight:700; color:var(--white); margin-bottom:3px; }
 .ml-desc { font-size:11px; color:var(--muted); line-height:1.45; }
-.map-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
+.map-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:0; margin-bottom:18px; }
 .mstat {
   background:rgba(42,157,143,.07); border:1px solid rgba(42,157,143,.2);
   border-radius:12px; padding:16px 18px; text-align:center;
 }
 .mstat .mv { font-size:26px; font-weight:900; color:var(--teal2); display:block; }
 .mstat .ml { font-size:11px; color:var(--muted); margin-top:4px; line-height:1.4; }
+
+/* Leaflet dark theme overrides */
+.leaflet-control-layers {
+  background:rgba(10,22,34,0.5) !important;
+  border:1.5px solid rgba(42,157,143,.35) !important;
+  border-radius:10px !important; color:#d0e4f0 !important;
+  box-shadow:0 4px 20px rgba(0,0,0,.5) !important;
+  min-width:0 !important; width:auto !important;
+}
+.leaflet-control-layers-expanded { padding:6px 8px !important; }
+.leaflet-control-layers-list { padding:0 !important; margin:0 !important; }
+.leaflet-control-layers-scrollbar { overflow:visible !important; padding:0 !important; }
+.leaflet-control-layers-separator { border-top:1px solid rgba(42,157,143,.2) !important; margin:4px 0 !important; }
+.leaflet-control-layers-base label, .leaflet-control-layers-overlays label {
+  font-size:10.5px !important; font-weight:600 !important; color:#c8dde8 !important;
+  margin:2px 0 !important; padding:0 !important; white-space:nowrap !important;
+  display:flex !important; align-items:center !important; gap:5px !important;
+}
+.leaflet-control-layers-toggle { background-color:rgba(42,157,143,.8) !important; }
+.leaflet-bar a { background:rgba(10,22,34,.9) !important; color:var(--teal2) !important; border-color:rgba(42,157,143,.3) !important; }
+.leaflet-bar a:hover { background:rgba(42,157,143,.2) !important; }
+.leaflet-popup-content-wrapper {
+  background:rgba(8,20,32,.97) !important; color:#d0e4f0 !important;
+  border:1px solid rgba(42,157,143,.35) !important; border-radius:10px !important;
+  font-family:'Inter',sans-serif !important; font-size:12.5px !important; line-height:1.6 !important;
+}
+.leaflet-popup-tip { background:rgba(8,20,32,.97) !important; }
+.leaflet-popup-close-button { color:#7a95a8 !important; }
+.leaflet-attribution-flag { display:none !important; }
+.leaflet-control-attribution { background:rgba(6,15,24,.85) !important; color:#556 !important; font-size:9px !important; }
 
 @keyframes fu { from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none} }
 @keyframes pulse {
@@ -565,52 +609,87 @@ footer { text-align:center; padding:22px; font-size:11px; color:var(--muted); bo
 <section id="live-map">
   <div class="sec-label">Interactive Visualization</div>
   <h2 class="sec-title">Live Map</h2>
-  <p class="sec-sub">Aral Sea region — salt spread, water volumes, and tugay forest planting zones</p>
+  <p class="sec-sub">Aral Sea satellite view — salt migration zones, tugay forests & AI planting recommendations</p>
 
-  <div class="map-stats a">
-    <div class="mstat">
-      <span class="mv">150M</span>
-      <span class="ml">Tons of toxic salt blown annually from the exposed seabed</span>
+  <!-- 4 Implementation Stages -->
+  <div class="map-stages a">
+    <div class="mstage">
+      <div class="mstage-n">1</div>
+      <div>
+        <div class="mstage-t">Map Initialization</div>
+        <div class="mstage-d">Esri World Imagery satellite base — switch to OSM street view via layer menu</div>
+      </div>
     </div>
-    <div class="mstat">
-      <span class="mv">~7,000 km²</span>
-      <span class="ml">Remaining surface water area (2024) — down from 68,000 km²</span>
+    <div class="mstage" style="border-color:rgba(224,123,57,.3)">
+      <div class="mstage-n" style="border-color:#e07b39;color:#e07b39;background:rgba(224,123,57,.15)">2</div>
+      <div>
+        <div class="mstage-t">Current Shoreline</div>
+        <div class="mstage-d">2024 Aral Sea coastline — North (recovering) and South (hypersaline remnant)</div>
+      </div>
     </div>
-    <div class="mstat">
-      <span class="mv">12,400 km²</span>
-      <span class="ml">Priority tugay forest planting zones identified by AI soil analysis</span>
+    <div class="mstage" style="border-color:rgba(192,57,43,.3)">
+      <div class="mstage-n" style="border-color:#c0392b;color:#c0392b;background:rgba(192,57,43,.15)">3</div>
+      <div>
+        <div class="mstage-t">Salt Deposits</div>
+        <div class="mstage-d">Toxic salt migration polygons — source zones, drift corridors and accumulation areas</div>
+      </div>
+    </div>
+    <div class="mstage" style="border-color:rgba(39,174,96,.3)">
+      <div class="mstage-n" style="border-color:#27ae60;color:#27ae60;background:rgba(39,174,96,.15)">4</div>
+      <div>
+        <div class="mstage-t">AI Green Plan</div>
+        <div class="mstage-d">Existing tugay forests + AI-recommended saxaul & riparian planting zones</div>
+      </div>
     </div>
   </div>
 
+  <!-- Key stats -->
+  <div class="map-stats a" style="transition-delay:.12s">
+    <div class="mstat">
+      <span class="mv">150M tons</span>
+      <span class="ml">Toxic salt blown annually from the exposed Aralkum seabed</span>
+    </div>
+    <div class="mstat">
+      <span class="mv">~7,000 km²</span>
+      <span class="ml">Remaining surface water (2024) — down from 68,000 km² in 1960</span>
+    </div>
+    <div class="mstat">
+      <span class="mv">12,400 km²</span>
+      <span class="ml">AI-identified priority planting zones (saxaul + tugay restoration)</span>
+    </div>
+  </div>
+
+  <!-- Map container -->
   <div id="aral-map" class="a" style="transition-delay:.2s"></div>
 
+  <!-- Legend -->
   <div class="map-legend a" style="transition-delay:.35s">
     <div class="ml-item">
       <div class="ml-dot" style="background:#2a9d8f"></div>
       <div>
-        <div class="ml-label">Remaining Sea Water</div>
-        <div class="ml-desc">Current surface water of the Aral Sea (North & South remnants)</div>
+        <div class="ml-label">Aral Sea Shoreline</div>
+        <div class="ml-desc">Current 2024 coastline — North &amp; South sea remnants</div>
       </div>
     </div>
     <div class="ml-item">
-      <div class="ml-dot" style="background:rgba(224,123,57,0.9)"></div>
+      <div class="ml-dot" style="background:#e07b39"></div>
       <div>
-        <div class="ml-label">Salt Spread Zone</div>
-        <div class="ml-desc">Active salt & toxic dust emission areas from the dry seabed</div>
+        <div class="ml-label">Salt Migration Zones</div>
+        <div class="ml-desc">Active toxic dust &amp; salt emission polygons from dry seabed</div>
       </div>
     </div>
     <div class="ml-item">
       <div class="ml-dot" style="background:#27ae60"></div>
       <div>
         <div class="ml-label">Existing Tugay Forest</div>
-        <div class="ml-desc">Remaining riparian forest along Amudarya & Syrdarya deltas</div>
+        <div class="ml-desc">Remaining riparian forest — Amudarya &amp; Syrdarya deltas</div>
       </div>
     </div>
     <div class="ml-item">
-      <div class="ml-dot" style="background:#6ecf8a; border:2px dashed #27ae60"></div>
+      <div class="ml-dot" style="background:#6ecf8a;outline:2px dashed #27ae60;outline-offset:2px"></div>
       <div>
-        <div class="ml-label">Recommended Planting</div>
-        <div class="ml-desc">AI-identified priority zones for saxaul & tugay reforestation</div>
+        <div class="ml-label">AI Planting Zones</div>
+        <div class="ml-desc">Saxaul &amp; tugay reforestation — AI soil suitability score &gt;70%</div>
       </div>
     </div>
   </div>
@@ -1059,72 +1138,238 @@ mk('ecoChart', {
 
 /* ── LIVE MAP ── */
 (function initAralMap() {
+
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STAGE 1 — Map Initialization
+     Base layers: Esri Satellite + OSM Street
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  var esriSat = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles © Esri — Esri, DigitalGlobe, GeoEye, Earthstar Geographics, USDA, USGS, AeroGRID, IGN', maxZoom: 18 }
+  );
+  var osmStreet = L.tileLayer(
+    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    { attribution: '© OpenStreetMap contributors', maxZoom: 19 }
+  );
+
   var map = L.map('aral-map', {
-    center: [45.2, 59.8],
+    center: [44.8, 59.6],
     zoom: 7,
+    layers: [esriSat],
     zoomControl: true,
     scrollWheelZoom: false
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors © CARTO',
-    subdomains: 'abcd', maxZoom: 19
-  }).addTo(map);
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STAGE 2 — Current Aral Sea Shorelines
+     Coordinates: approximate 2024 coastline
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  var northAralPoly = L.polygon([
+    [46.00,60.40],[46.20,60.55],[46.45,60.65],[46.70,60.80],[46.88,61.10],
+    [46.90,61.45],[46.75,61.75],[46.50,61.90],[46.20,61.80],[45.95,61.55],
+    [45.78,61.20],[45.85,60.85],[46.00,60.60]
+  ], {
+    color:'#2ac3a2', fillColor:'#2a9d8f', fillOpacity:0.50, weight:2.5
+  }).bindPopup(
+    '<b style="color:#2ac3a2">North Aral Sea (Kazakhstan)</b><br>' +
+    '📍 Coordinates: ~46.5°N 61.0°E<br>' +
+    '🌊 Surface area: ~3,300 km² (2024)<br>' +
+    '💧 Salinity: ~12 g/L — recovering<br>' +
+    '🏗 Kokaral Dam (2005) halted further loss<br>' +
+    '🐟 Fish populations slowly returning'
+  );
 
-  /* ── Remaining Sea Water (North Aral) ── */
-  L.circle([46.55, 61.05], { radius: 42000, color:'#2a9d8f', fillColor:'#2a9d8f', fillOpacity:0.55, weight:2 })
-    .addTo(map).bindPopup('<b style="color:#2a9d8f">North Aral Sea</b><br>Surface: ~3,300 km²<br>Restored by Kokaral Dam (2005)<br>Salinity: ~12 g/L (recovering)');
+  var southAralPoly = L.polygon([
+    [43.35,58.30],[43.60,58.45],[43.90,58.55],[44.10,58.75],[44.25,59.05],
+    [44.10,59.30],[43.80,59.40],[43.50,59.35],[43.25,59.10],[43.10,58.80],
+    [43.20,58.50]
+  ], {
+    color:'#1a8a8a', fillColor:'#1a6b6b', fillOpacity:0.45, weight:2.5
+  }).bindPopup(
+    '<b style="color:#2a9d8f">South Aral — Eastern Basin (Uzbekistan)</b><br>' +
+    '📍 Coordinates: ~43.7°N 58.9°E<br>' +
+    '🌊 Surface area: ~3,700 km² (2024)<br>' +
+    '💧 Salinity: >100 g/L — hypersaline<br>' +
+    '📉 Volume: ~10 km³ remaining (was 1,060 km³)<br>' +
+    '⚠️ No commercial fish — biologically dead'
+  );
 
-  /* ── Remaining Sea Water (South Aral — eastern remnant) ── */
-  L.circle([43.85, 58.8], { radius: 28000, color:'#1a6b6b', fillColor:'#1a6b6b', fillOpacity:0.45, weight:2 })
-    .addTo(map).bindPopup('<b style="color:#1a6b6b">South Aral — Eastern Basin</b><br>Surface: ~3,700 km²<br>Salinity: >100 g/L (hypersaline)<br>Volume: ~10 km³ remaining');
+  var shorelineGroup = L.layerGroup([northAralPoly, southAralPoly]);
 
-  /* ── Salt Spread Zones ── */
-  L.circle([44.8, 59.2], { radius: 95000, color:'#e07b39', fillColor:'#e07b39', fillOpacity:0.18, weight:1.5, dashArray:'6 4' })
-    .addTo(map).bindPopup('<b style="color:#e07b39">Primary Salt Emission Zone</b><br>Annual output: ~75M tons of salt & dust<br>Toxic content: DDT, pesticides, heavy metals<br>Spread radius: 300–500 km');
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STAGE 3 — Salt Deposits & Migration Zones
+     3 polygons: main seabed, south flat, east drift
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  var saltMain = L.polygon([
+    [44.30,58.85],[44.80,59.05],[45.30,59.35],[45.70,59.70],[45.85,60.20],
+    [45.55,60.60],[45.00,60.45],[44.50,60.10],[44.00,59.70],[43.80,59.30],
+    [44.00,58.95]
+  ], {
+    color:'#e07b39', fillColor:'#d4651a', fillOpacity:0.38, weight:2, dashArray:'6 4'
+  }).bindPopup(
+    '<b style="color:#e07b39">⚠ Main Salt Emission Zone (Central Aralkum)</b><br>' +
+    '📍 Coordinates: ~44.8°N 59.2°E<br>' +
+    '🧂 Annual salt output: ~75M tons<br>' +
+    '☠ Toxic content: DDT, HCH, pesticides, heavy metals<br>' +
+    '💨 Dust plumes reach 300–500 km from source<br>' +
+    '📊 Salt crust expanding ~1,200 km²/year'
+  );
 
-  L.circle([43.5, 58.2], { radius: 70000, color:'#c0392b', fillColor:'#c0392b', fillOpacity:0.16, weight:1.5, dashArray:'6 4' })
-    .addTo(map).bindPopup('<b style="color:#c0392b">Southern Salt Flat (Aralkum)</b><br>Area: ~57,000 km² total dry seabed<br>Annual dust: ~75M tons from south<br>Contamination: organochlorine compounds');
+  var saltSouth = L.polygon([
+    [42.80,58.00],[43.20,58.20],[43.55,58.40],[43.75,58.65],[43.50,59.00],
+    [43.15,58.85],[42.85,58.55],[42.65,58.20]
+  ], {
+    color:'#c0392b', fillColor:'#a93226', fillOpacity:0.35, weight:2, dashArray:'6 4'
+  }).bindPopup(
+    '<b style="color:#c0392b">⚠ Southern Salt Flat — Aralkum Desert</b><br>' +
+    '📍 Coordinates: ~43.2°N 58.3°E<br>' +
+    '🏜 Total Aralkum dry seabed: 57,000 km²<br>' +
+    '🧂 Salt layer depth: up to 1.5 metres<br>' +
+    '☠ Organochlorine contamination confirmed<br>' +
+    '💨 Annual dust: ~75M tons from southern basin'
+  );
 
-  L.circle([45.6, 60.8], { radius: 55000, color:'#f4a261', fillColor:'#f4a261', fillOpacity:0.14, weight:1, dashArray:'4 4' })
-    .addTo(map).bindPopup('<b style="color:#f4a261">Eastern Salt Drift Zone</b><br>Secondary dust pathway toward Kazakhstan<br>Salt load: ~30M tons/year eastward drift');
+  var saltEast = L.polygon([
+    [45.50,60.50],[45.85,60.70],[46.15,61.00],[45.95,61.40],[45.55,61.25],
+    [45.25,60.90],[45.35,60.55]
+  ], {
+    color:'#f4a261', fillColor:'#e8853a', fillOpacity:0.30, weight:1.5, dashArray:'5 5'
+  }).bindPopup(
+    '<b style="color:#f4a261">Eastern Salt Drift Corridor</b><br>' +
+    '📍 Coordinates: ~45.7°N 60.9°E<br>' +
+    '💨 Secondary dust pathway — NE prevailing winds<br>' +
+    '🧂 Salt load: ~30M tons/year drifting eastward<br>' +
+    '📡 AI monitoring: real-time PM2.5 alerts issued<br>' +
+    '🌱 Windbreak planting needed along this corridor'
+  );
 
-  /* ── Existing Tugay Forest ── */
-  L.polygon([
-    [43.2, 59.6],[43.5, 59.9],[43.8, 60.2],[43.6, 60.6],[43.1, 60.3],[42.8, 59.8]
-  ], { color:'#27ae60', fillColor:'#27ae60', fillOpacity:0.45, weight:2 })
-    .addTo(map).bindPopup('<b style="color:#27ae60">Lower Amudarya Tugay (Existing)</b><br>Area: ~320,000 ha remaining<br>Species: Populus euphratica, Elaeagnus, Tamarix<br>Status: Critically fragmented — only 12% of 1960 extent');
+  var saltGroup = L.layerGroup([saltMain, saltSouth, saltEast]);
 
-  L.polygon([
-    [46.0, 60.5],[46.3, 61.0],[46.6, 61.3],[46.4, 61.7],[45.9, 61.4],[45.7, 60.8]
-  ], { color:'#27ae60', fillColor:'#27ae60', fillOpacity:0.4, weight:2 })
-    .addTo(map).bindPopup('<b style="color:#27ae60">Syrdarya Delta Tugay (Existing)</b><br>Area: ~180,000 ha<br>Connected to North Aral restoration zone<br>Status: Partially recovering since 2005');
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STAGE 4A — Existing Tugay Forests
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  var tugayAmudarya = L.polygon([
+    [42.70,59.20],[42.90,59.50],[43.20,59.80],[43.50,60.10],[43.75,60.45],
+    [43.55,60.80],[43.10,60.65],[42.75,60.25],[42.45,59.80],[42.55,59.40]
+  ], {
+    color:'#27ae60', fillColor:'#1e8449', fillOpacity:0.50, weight:2.5
+  }).bindPopup(
+    '<b style="color:#27ae60">🌿 Lower Amudarya Tugay Forest (Existing)</b><br>' +
+    '📍 Coordinates: ~43.0°N 59.9°E<br>' +
+    '🌳 Area: ~320,000 ha remaining<br>' +
+    '🌱 Species: <i>Populus euphratica, Elaeagnus angustifolia, Tamarix</i><br>' +
+    '⚠ Only 12% of original 1960 extent survives<br>' +
+    '🔴 Status: Critically fragmented — urgent protection needed'
+  );
 
-  /* ── Recommended Planting Zones ── */
-  L.polygon([
-    [44.2, 58.5],[44.6, 58.9],[45.0, 59.3],[44.7, 59.7],[44.2, 59.5],[43.9, 59.0]
-  ], { color:'#6ecf8a', fillColor:'#6ecf8a', fillOpacity:0.28, weight:2, dashArray:'8 5' })
-    .addTo(map).bindPopup('<b style="color:#6ecf8a">Priority Planting Zone A</b><br>Recommended: 4,200 km² saxaul & tugay<br>AI soil score: 82/100 suitability<br>Projected dust reduction: 35% locally<br>Water need: minimal — drought-resistant species');
+  var tugaySyrdarya = L.polygon([
+    [45.85,60.30],[46.10,60.55],[46.40,60.80],[46.60,61.10],[46.45,61.45],
+    [46.10,61.35],[45.80,61.00],[45.65,60.65],[45.80,60.35]
+  ], {
+    color:'#27ae60', fillColor:'#1e8449', fillOpacity:0.45, weight:2.5
+  }).bindPopup(
+    '<b style="color:#27ae60">🌿 Syrdarya Delta Tugay (Existing)</b><br>' +
+    '📍 Coordinates: ~46.1°N 60.9°E<br>' +
+    '🌳 Area: ~180,000 ha<br>' +
+    '💧 Connected to North Aral restoration zone<br>' +
+    '📈 Status: Partially recovering since Kokaral Dam (2005)<br>' +
+    '🐦 Wildlife corridors being re-established'
+  );
 
-  L.polygon([
-    [45.4, 59.5],[45.8, 59.9],[46.2, 60.2],[45.9, 60.7],[45.4, 60.4],[45.1, 59.9]
-  ], { color:'#6ecf8a', fillColor:'#6ecf8a', fillOpacity:0.28, weight:2, dashArray:'8 5' })
-    .addTo(map).bindPopup('<b style="color:#6ecf8a">Priority Planting Zone B</b><br>Recommended: 3,800 km² saxaul corridor<br>AI soil score: 76/100 suitability<br>Function: windbreak between North Aral & desert<br>Planting timeline: 2025–2030');
+  var tugayGroup = L.layerGroup([tugayAmudarya, tugaySyrdarya]);
 
-  L.polygon([
-    [43.0, 60.0],[43.4, 60.4],[43.7, 60.8],[43.3, 61.1],[42.9, 60.7],[42.7, 60.2]
-  ], { color:'#6ecf8a', fillColor:'#2ac3a2', fillOpacity:0.25, weight:2, dashArray:'8 5' })
-    .addTo(map).bindPopup('<b style="color:#2ac3a2">Priority Planting Zone C (Delta Restoration)</b><br>Recommended: 4,400 km² riparian forest<br>Species: Populus euphratica, Phragmites, Tamarix<br>Goal: Restore Amudarya delta biodiversity<br>AI biodiversity gain estimate: +340% by 2050');
+  /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     STAGE 4B — AI Recommended Planting Zones
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+  var plantA = L.polygon([
+    [44.20,58.50],[44.60,58.70],[45.00,59.00],[45.20,59.45],[44.90,59.80],
+    [44.45,59.65],[44.05,59.25],[43.90,58.85]
+  ], {
+    color:'#6ecf8a', fillColor:'#5ab870', fillOpacity:0.32, weight:2.5, dashArray:'9 5'
+  }).bindPopup(
+    '<b style="color:#6ecf8a">🌱 AI Planting Zone A — Former Western Basin</b><br>' +
+    '📍 Coordinates: ~44.5°N 59.1°E<br>' +
+    '📐 Recommended area: 4,200 km²<br>' +
+    '🤖 AI soil suitability score: 82 / 100<br>' +
+    '🌵 Species: <i>Haloxylon persicum</i> (saxaul), <i>Calligonum</i><br>' +
+    '📉 Projected dust reduction: 35% locally within 10 years<br>' +
+    '💧 Water requirement: minimal — drought-tolerant species'
+  );
+
+  var plantB = L.polygon([
+    [45.30,59.40],[45.70,59.60],[46.05,59.95],[46.00,60.40],[45.60,60.55],
+    [45.20,60.25],[45.05,59.80]
+  ], {
+    color:'#6ecf8a', fillColor:'#5ab870', fillOpacity:0.32, weight:2.5, dashArray:'9 5'
+  }).bindPopup(
+    '<b style="color:#6ecf8a">🌱 AI Planting Zone B — Central Windbreak Corridor</b><br>' +
+    '📍 Coordinates: ~45.6°N 60.0°E<br>' +
+    '📐 Recommended area: 3,800 km²<br>' +
+    '🤖 AI soil suitability score: 76 / 100<br>' +
+    '🌵 Function: Windbreak between North Aral & desert<br>' +
+    '📅 Planting timeline: 2025–2030<br>' +
+    '🚁 Drone planting feasibility: HIGH'
+  );
+
+  var plantC = L.polygon([
+    [42.85,59.85],[43.15,60.05],[43.45,60.35],[43.70,60.70],[43.45,61.00],
+    [43.05,60.90],[42.75,60.55],[42.65,60.15]
+  ], {
+    color:'#2ac3a2', fillColor:'#22a88c', fillOpacity:0.30, weight:2.5, dashArray:'9 5'
+  }).bindPopup(
+    '<b style="color:#2ac3a2">🌱 AI Planting Zone C — Amudarya Delta Restoration</b><br>' +
+    '📍 Coordinates: ~43.2°N 60.3°E<br>' +
+    '📐 Recommended area: 4,400 km²<br>' +
+    '🤖 AI soil suitability score: 88 / 100<br>' +
+    '🌳 Species: <i>Populus euphratica, Phragmites australis, Tamarix</i><br>' +
+    '🎯 Goal: Restore Amudarya delta biodiversity<br>' +
+    '📈 AI estimate: +340% biodiversity index by 2050'
+  );
+
+  var plantGroup = L.layerGroup([plantA, plantB, plantC]);
 
   /* ── City Markers ── */
-  var cityIcon = L.divIcon({ html:'<div style="width:10px;height:10px;background:#f0f4f8;border-radius:50%;border:2px solid #2a9d8f;"></div>', iconSize:[10,10], iconAnchor:[5,5] });
+  function cityMarker(latlng, name, info) {
+    var icon = L.divIcon({
+      html:'<div style="width:11px;height:11px;background:#f0f4f8;border-radius:50%;border:2.5px solid #2ac3a2;box-shadow:0 0 6px rgba(42,195,162,.6)"></div>',
+      iconSize:[11,11], iconAnchor:[5.5,5.5], className:''
+    });
+    return L.marker(latlng, {icon:icon}).bindPopup('<b>' + name + '</b><br>' + info);
+  }
 
-  L.marker([43.77, 59.15], {icon: cityIcon}).addTo(map)
-    .bindPopup('<b>Moynak</b><br>Former fishing port — now 150 km from the sea<br>Population: ~12,000 (down from 40,000)');
-  L.marker([42.46, 59.61], {icon: cityIcon}).addTo(map)
-    .bindPopup('<b>Nukus</b><br>Capital of Karakalpakstan<br>Population: ~330,000<br>Cancer rate: 10× national average');
-  L.marker([46.80, 61.68], {icon: cityIcon}).addTo(map)
-    .bindPopup('<b>Aralsk</b><br>Former Kazakh port town<br>Kokaral Dam built 2005 — North Aral recovering');
+  var cities = L.layerGroup([
+    cityMarker([43.77,59.15], 'Moynak 📍',
+      'Former fishing port — now 150 km inland from the sea<br>Population: ~12,000 (down from 40,000)<br>🚢 Ship graveyard museum — symbol of the disaster'),
+    cityMarker([42.46,59.61], 'Nukus 📍',
+      'Capital of Karakalpakstan, Uzbekistan<br>Population: ~330,000<br>☠ Cancer rate: 10× national average<br>🏥 Highest infant mortality in former Soviet states'),
+    cityMarker([46.80,61.68], 'Aralsk 📍',
+      'Former Kazakh port town<br>🏗 Kokaral Dam built 2005 — sea returning<br>🐟 Fishing industry partially revived<br>📈 North Aral level rising ~20 cm/year'),
+    cityMarker([41.55,60.64], 'Urgench 📍',
+      'Major city near Amudarya River<br>Population: ~185,000<br>🌾 Agricultural hub facing water scarcity<br>AI drip-irrigation pilot active since 2022')
+  ]);
+
+  /* ── Add all overlay layers to map ── */
+  shorelineGroup.addTo(map);
+  saltGroup.addTo(map);
+  tugayGroup.addTo(map);
+  plantGroup.addTo(map);
+  cities.addTo(map);
+
+  /* ── Interactive Layer Control Menu ── */
+  var baseMaps = {
+    '🛰 Satellite View (Esri)': esriSat,
+    '🗺 Street Map (OpenStreetMap)': osmStreet
+  };
+  var overlayMaps = {
+    '🌊 Aral Sea Shoreline (2024)': shorelineGroup,
+    '🧂 Salt Migration Zones': saltGroup,
+    '🌿 Existing Tugay Forests': tugayGroup,
+    '🌱 AI Recommended Planting Zones': plantGroup,
+    '📍 Cities & Landmarks': cities
+  };
+
+  L.control.layers(baseMaps, overlayMaps, { collapsed: false, position: 'topright' }).addTo(map);
+
 })();
 
 /* Vision radar */
